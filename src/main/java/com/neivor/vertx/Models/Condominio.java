@@ -3,8 +3,8 @@ package com.neivor.vertx.Models;
 import com.google.gson.annotations.SerializedName;
 
 public class Condominio {
-    @SerializedName("idCondominio")
-    private String idCondominio;
+    @SerializedName("idCondomino")
+    private String idCondomino;
     @SerializedName("nombrePagador")
     private String nombrePagador;
     @SerializedName("documentoPagador")
@@ -13,13 +13,23 @@ public class Condominio {
     private String numeroCasaDep;
     @SerializedName("valoraPagar")
     private String valoraPagar;
+    @SerializedName("servicios_idservicios")
+    private String servicios_idservicios;
 
-    public String getIdCondominio() {
-        return idCondominio;
+    public String getIdCondomino() {
+        return idCondomino;
     }
 
-    public void setIdCondominio(String idCondominio) {
-        this.idCondominio = idCondominio;
+    public void setIdCondomino(String idCondomino) {
+        this.idCondomino = idCondomino;
+    }
+
+    public String getServicios_idservicios() {
+        return servicios_idservicios;
+    }
+
+    public void setServicios_idservicios(String servicios_idservicios) {
+        this.servicios_idservicios = servicios_idservicios;
     }
 
     public String getNombrePagador() {
