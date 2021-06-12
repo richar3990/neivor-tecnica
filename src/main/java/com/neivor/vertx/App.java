@@ -8,6 +8,7 @@ import com.neivor.vertx.Models.Condominio;
 import com.neivor.vertx.Models.Ordenes_pago;
 import com.neivor.vertx.Querys.CondominioQuery;
 import com.neivor.vertx.Querys.OrdenPagoQuery;
+import com.neivor.vertx.Querys.UsuarioQuery;
 import com.neivor.vertx.Util.UtilJson;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -59,6 +60,30 @@ public class App
                     System.out.println(condominioString);
                     response.end(condominioString);
                 });
+        Route consultarUsuario = router
+                .post("/login")
+                .handler(routingContext -> {
+                    HttpServerResponse response = routingContext.response();
+                    response.putHeader("content-type","application/json");
+                    JsonObject body =routingContext.getBodyAsJson();
+                    String nombreuser = body.getString("nombreUsuario");
+                    String idEntidad = body.getString("idEntidad");
+                    String pass = body.getString("usuarioPass");
+                    UsuarioQuery usuario = new UsuarioQuery();
+                    try {
+                        int id = usuario.usurioLogeado(nombreuser,pass,idEntidad);
+                        if (id>0){
+                            response.end();
+                        }else{
+                            response.setStatusMessage("error");
+                            response.end();
+                        }
+
+                    }
+                    catch (SQLException throwables) {
+                        System.out.println(throwables);
+                    }
+                });
         Route consultaExisteCondominio = router
                 .post("/condomino")
                 .handler(routingContext -> {
@@ -73,6 +98,7 @@ public class App
                     CondominioQuery condomino = new CondominioQuery();
                     try {
                         int id = condomino.obtenerCondomino(nombrePagador,documentoNum,numeroCasaDep,idservicios);
+                        System.out.println("obtiene id "+id);
                         if (id > 0){
                             Ordenes_pago ordenesPago = new Ordenes_pago();
                             ordenesPago.setIdcondominio(""+id);
@@ -83,16 +109,14 @@ public class App
                             ordenesPagoDao.guardar(ordenesPago);
                             OrdenPagoQuery ordenPagoQuery = new OrdenPagoQuery();
                             String consultaOrden = ordenPagoQuery.obtenerNumeroOrden();
-                            String resp = consultaOrden;
-                            response.end(resp);
+                            response.end(consultaOrden);
                         }else{
-                            response.end(CodErrores.BUSQUEDA_SIN_RESULTADO);
+                            response.setStatusMessage("error");
+                            response.end();
                         }
                     } catch (SQLException throwables) {
                         System.out.println(throwables);
                     }
-
-
                 });
         Route insertarCondominio = router
                 .post("/condominio")

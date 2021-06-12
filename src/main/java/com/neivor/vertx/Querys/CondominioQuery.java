@@ -1,4 +1,5 @@
 package com.neivor.vertx.Querys;
+
 import com.neivor.vertx.Bd.Consulta;
 import com.neivor.vertx.Models.Condominio;
 
@@ -24,21 +25,23 @@ public class CondominioQuery {
         return condominio;
 
     }
-    public int obtenerCondomino(String nombrePagador, String documento, String numCasa, String idServ)throws SQLException{
-        String sql = "SELECT `condomino`.`idcondomino` AS `id` " +
-                "FROM `condomino` WHERE" +
-                " `condomino`.`nombrePagador` = ? and" +
-                " `condomino`.`documentoNum` = ? and" +
-                " `condomino`.`numeroCasaDep` = ? and" +
-                " `condomino`.`servicios_idservicios` = ? ";
+
+    public int obtenerCondomino(String nombrePagador, String documento, String numCasa, String idServ) throws SQLException {
+        String sql = "SELECT `condomino`.`IDCONDOMINO`, `condomino`.`NOMBREPAGADOR`, `condomino`.`DOCUMENTONUM`, `condomino`.`NUMEROCASADEP`," +
+                " `deuda_condomino`.`IDSERVICIOS` FROM `condomino` " +
+                "INNER JOIN `deuda_condomino` ON `condomino`.`IDCONDOMINO` = `deuda_condomino`.`IDCONDOMINO` " +
+                "WHERE `condomino`.`NOMBREPAGADOR` = ? AND " +
+                "`condomino`.`DOCUMENTONUM` = ? AND " +
+                "`condomino`.`NUMEROCASADEP` = ? AND " +
+                "`deuda_condomino`.`IDSERVICIOS` = ?";
         Consulta consulta = new Consulta();
         consulta.agregarParametro(nombrePagador);
         consulta.agregarParametro(documento);
         consulta.agregarParametro(numCasa);
         consulta.agregarParametro(idServ);
 
-         String resultado = consulta.obtenerCampo(sql);
-         resultado = (!resultado.equals("")) ? resultado : "0";
+        String resultado = consulta.obtenerCampo(sql);
+        resultado = (!resultado.equals("")) ? resultado : "0";
         int id = Integer.parseInt(resultado);
         return Math.max(id, 0);
     }
