@@ -1,12 +1,14 @@
 package com.neivor.vertx;
 
-import com.neivor.vertx.Constantes.CodErrores;
 import com.neivor.vertx.Constantes.EstadoOrdenPago;
 import com.neivor.vertx.Dao.CondominioDao;
 import com.neivor.vertx.Dao.Ordenes_pagoDao;
+import com.neivor.vertx.Models.CodErrores;
 import com.neivor.vertx.Models.Condominio;
+import com.neivor.vertx.Models.DeudaCondomino;
 import com.neivor.vertx.Models.Ordenes_pago;
 import com.neivor.vertx.Querys.CondominioQuery;
+import com.neivor.vertx.Querys.DeudaCondominoQuery;
 import com.neivor.vertx.Querys.OrdenPagoQuery;
 import com.neivor.vertx.Querys.UsuarioQuery;
 import com.neivor.vertx.Util.UtilJson;
@@ -23,6 +25,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 import sun.security.provider.certpath.Vertex;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class App 
 {
@@ -136,6 +139,84 @@ public class App
                     }
                     response.end();
                         });
+        //CONSULTA POR NUMERO DE ORDEN DE PAGO
+        Route consultaOrdenPago = router
+                .get("/orden-pago/:id")
+                .handler(routingContext -> {
+                    String id = routingContext.request().getParam("id");
+                    HttpServerResponse response = routingContext.response();
+                    response.putHeader("content-type","application/json");
+                    OrdenPagoQuery ordenPagoQuery = new OrdenPagoQuery();
+
+                    try{
+                        Ordenes_pago existeOrden;
+                        existeOrden = ordenPagoQuery.existeOrden(id);
+                        int existe = (existeOrden.getIdordenes_pago() == null) ? 0:1;
+                       if(existe>0){
+                           String idServicio = existeOrden.getServicios_idservicios();
+                           String idCondomino = existeOrden.getIdcondominio();
+                           int credito = idServicio.equals("2") ? 0:1;
+                           if(credito>0){
+                               DeudaCondomino deudaCondomino;
+                               DeudaCondominoQuery deudaCondominoQuery = new DeudaCondominoQuery();
+                               deudaCondomino = deudaCondominoQuery.obtnerDatosDeuda(idCondomino, idServicio);
+                               String resp = UtilJson.objetoAJsonString(deudaCondomino);
+                               response.end(resp);
+                           }else{
+                               DeudaCondominoQuery deudaQuery= new DeudaCondominoQuery();
+                               DeudaCondomino deudaCondomino = deudaQuery.obtnerDatosDeuda(idCondomino,idServicio);
+                               ArrayList datosCuotas = deudaQuery.obtenerDatosCuotas(deudaCondomino.getIDDEUDA_CONDOMINO());
+                               String resp = UtilJson.objetoAJsonString(datosCuotas);
+                               response.end(resp);
+                           }
+                       }else {
+                           CodErrores errores = new CodErrores();
+                           errores.setCodError("301");
+                           errores.setDescripcion("CÓDIGO DE DEPOSITANTE NO EXISTE");
+                           String resp = UtilJson.objetoAJsonString(errores);
+                           response.end(resp);
+                       }
+                    }catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
+
+                });
+        //CONSULTA POR NUMERO DE CONDOMINO
+        Route consultaNumeroCliente = router
+                .get("/consulta-condomino/:id/:idServicio")
+                .handler(routingContext -> {
+                    String id = routingContext.request().getParam("id");
+                    String idServicio = routingContext.request().getParam("idServicio");
+                    HttpServerResponse response = routingContext.response();
+                    response.putHeader("content-type","application/json");
+                    DeudaCondominoQuery deudaCondominoQuery = new DeudaCondominoQuery();
+                    try{
+                        DeudaCondomino existeDeuda;
+                        existeDeuda = deudaCondominoQuery.obtnerDatosDeuda(id,idServicio);
+                        int existe = (existeDeuda.getIMPORTEADEUDADO() == null) ? 0:1;
+                        if(existe>0){
+
+                            if(!idServicio.equals("2")){
+                                String resp = UtilJson.objetoAJsonString(existeDeuda);
+                                response.end(resp);
+                            }else{
+                                ArrayList datosCuotas = deudaCondominoQuery.obtenerDatosCuotas(existeDeuda.getIDDEUDA_CONDOMINO());
+                                String resp = UtilJson.objetoAJsonString(datosCuotas);
+                                response.end(resp);
+                            }
+
+                        }else {
+                            CodErrores errores = new CodErrores();
+                            errores.setCodError("301");
+                            errores.setDescripcion("CÓDIGO DE DEPOSITANTE NO EXISTE");
+                            String resp = UtilJson.objetoAJsonString(errores);
+                            response.end(resp);
+                        }
+                    }catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
+
+                });
                 httpServer
                         .requestHandler(router::accept)
                         .listen(8091);
