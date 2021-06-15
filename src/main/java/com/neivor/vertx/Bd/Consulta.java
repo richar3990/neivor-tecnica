@@ -5,6 +5,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+
+ * Esta clase define objetos que contienen tantos enteros aleatorios entre 0 y 1000 como se le definen al crear un objeto
+
+ * @author: Richar Daniel Meza
+
+ * @version: 13/05/2021/
+
+ */
+
 public class Consulta extends Sentencia {
     private ResultSet resultSet;
     private String sqlConsulta;
@@ -45,6 +55,15 @@ public class Consulta extends Sentencia {
 
     }
 
+    /**
+     * Obtiene el valor del primer campo del primer registro.
+     *
+     * @param sqlConsulta la consulta sql
+     * @return el valor del campo o un <code>String</code> vacio si no encuentra resultado o el valor del campo es
+     * <code>null</code>
+     * @throws SQLException si se produce un error de tipo sql
+     */
+
     public String[] obtenerRegistro(String sqlConsulta) throws SQLException {
         try {
             this.sqlConsulta = sqlConsulta;
@@ -64,7 +83,13 @@ public class Consulta extends Sentencia {
         }
 
     }
-
+    /**
+     * Establece los datos para registro en consulta sql
+     *
+     * @param sqlConsulta la consulta sql
+     * <code>null</code>
+     * @throws SQLException si se produce un error de tipo sql
+     */
     public void establecerDatosRegistro(String sqlConsulta) throws SQLException {
         try {
             this.sqlConsulta = sqlConsulta;
@@ -88,7 +113,13 @@ public class Consulta extends Sentencia {
             cerrarResultSet();
         }
     }
-
+    /**
+     * Obtiene el valor un campo de la tabla en especifico.
+     *
+     * @param nombreCampo nombre del campo que desea obtener.
+     * @return el valor del campo o un <code>String</code> vacio si no encuentra resultado o el valor del campo es
+     * <code>null</code>
+     */
     public String obtenerValorCampo(String nombreCampo) {
         return columnas.get(nombreCampo);
     }
